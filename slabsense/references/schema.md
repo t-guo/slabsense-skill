@@ -46,6 +46,26 @@ The importer may produce `extraction_status: partial` when title, price, grade, 
 
 `fetch_listing.py` is kept for offline parsing of saved HTML or explicit debugging. Do not use it as the routine marketplace URL importer.
 
+## Temp Cleanup
+
+Browser screenshots and listing JSON are not stored inside `/tmp/slabsense-chrome`; that directory is the isolated Chrome profile. Preview removable SlabSense temp artifacts with:
+
+```bash
+python3 slabsense/scripts/cleanup_tmp.py
+```
+
+Delete matching temp artifacts older than 24 hours with:
+
+```bash
+python3 slabsense/scripts/cleanup_tmp.py --execute
+```
+
+Remove the isolated Chrome profile only when you want to reset session/cache state:
+
+```bash
+python3 slabsense/scripts/cleanup_tmp.py --profile --execute
+```
+
 ## Comps CSV
 
 Columns:

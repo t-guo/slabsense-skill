@@ -29,6 +29,8 @@ SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchase
    - Chrome warm check: `node scripts/ensure_chrome.js`
    - Browser URL import: `node scripts/browser_listing.js <listing-url> --output listing.json`
    - Add `--screenshot listing.png` only when photo or condition inspection is needed.
+   - Temp cleanup preview: `python3 scripts/cleanup_tmp.py`
+   - Temp cleanup execute: `python3 scripts/cleanup_tmp.py --execute`
    - Evals: `python3 scripts/eval.py`
 5. For marketplace URLs, skip plain HTTP metadata fetching and use Chrome-backed import first.
    - Ensure an isolated Chrome debugging session is available:
@@ -38,6 +40,7 @@ SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchase
    - If the browser import returns `extraction_status: ok` or `partial`, use the extracted JSON and clearly label missing facts.
    - Do not run `fetch_listing.py` as a routine fallback for marketplace URLs; it is kept only for offline parsing of saved HTML or explicit debugging.
    - If both import paths are blocked, do not invent listing facts. Ask for the title, price, grade, photo observations, seller terms, and comps.
+   - Screenshots and listing JSON are not stored inside `/tmp/slabsense-chrome`; that path is the isolated Chrome profile. Use `python3 scripts/cleanup_tmp.py` to preview removable `/private/tmp/slabsense-*` artifacts, and add `--execute` to delete them.
 6. Return a concise collector-facing recommendation:
    - verdict: Buy, Watch, or Pass
    - fair value range

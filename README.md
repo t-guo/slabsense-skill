@@ -14,17 +14,33 @@ Restart Codex if the skill does not appear immediately.
 
 ## Use In Codex
 
-Ask Codex:
+After installing the skill, use it directly in a Codex message:
 
 ```text
-Use SlabSense to analyze this PSA card listing.
+slabsense https://www.ebay.com/itm/123456789012
 ```
 
-Provide the card name, grade, asking price, listing notes, image observations, buyer intent, and any comps you have. SlabSense is designed to separate supplied facts from inferences and to avoid inventing PSA population data, cert details, sold prices, or condition flaws.
+Codex should then:
+
+1. load the SlabSense skill,
+2. ensure Chrome DevTools is available,
+3. capture the listing with `browser_listing.js`,
+4. source exact sold comps,
+5. return a Buy / Watch / Pass recommendation with fair value, offer guidance, risk, confidence, and missing information.
+
+You can also provide structured facts instead of a URL:
+
+```text
+slabsense Charizard VMAX SV107 PSA 10, ask $300, personal collection
+```
+
+SlabSense is designed to separate supplied facts from inferences and to avoid inventing PSA population data, cert details, sold prices, or condition flaws.
 
 SlabSense now treats comp validation as a regular part of every price recommendation: exact same-card same-grade sold comps first, active asks and nearby-grade sales separated, and blocked or unavailable comp sources called out in the result.
 
-## Use Locally
+## Local Scripts
+
+These commands are the implementation path that Codex uses under the hood. They are useful for debugging, scripted runs, or reproducing a listing extraction outside the chat workflow.
 
 Ensure a dedicated Chrome debugging session is available:
 
@@ -62,6 +78,24 @@ This reads the page as Chrome renders it, captures exposed image URLs, and can s
 The helper reuses `http://127.0.0.1:9222` when it is already running, otherwise it launches an isolated Chrome profile at `/tmp/slabsense-chrome`.
 
 `fetch_listing.py` is kept for offline parsing of saved HTML or explicit debugging. It is not the normal marketplace URL path.
+
+Preview temporary artifact cleanup:
+
+```bash
+python3 slabsense/scripts/cleanup_tmp.py
+```
+
+Delete SlabSense temp screenshots, JSON, HTML, and image files older than 24 hours:
+
+```bash
+python3 slabsense/scripts/cleanup_tmp.py --execute
+```
+
+The isolated Chrome profile is separate from screenshots. Remove it only when you want to reset Chrome session/cache state:
+
+```bash
+python3 slabsense/scripts/cleanup_tmp.py --profile --execute
+```
 
 Run the deterministic analyzer:
 
