@@ -55,7 +55,6 @@ SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchase
 Use [references/risk-rubric.md](references/risk-rubric.md) for scoring rules and red flags.
 Use [references/comp-sourcing.md](references/comp-sourcing.md) for comp source hierarchy and fair-value evidence requirements.
 Use [references/schema.md](references/schema.md) for accepted input and output fields.
-Use [references/examples.md](references/examples.md) when the user wants examples or asks how to format data.
 
 ## Verdict Rules
 
