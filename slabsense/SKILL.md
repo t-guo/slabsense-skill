@@ -26,12 +26,13 @@ SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchase
 4. Prefer deterministic scripts when the user provides structured input files.
    - Analyze: `python3 scripts/analyze.py <listing.json> --comps <comps.csv>`
    - Prompt export: `python3 scripts/prompt.py <listing.json> --comps <comps.csv>`
+   - Chrome warm check: `node scripts/ensure_chrome.js`
    - Browser URL import: `node scripts/browser_listing.js <listing-url> --output listing.json`
    - Add `--screenshot listing.png` only when photo or condition inspection is needed.
    - Evals: `python3 scripts/eval.py`
 5. For marketplace URLs, skip plain HTTP metadata fetching and use Chrome-backed import first.
-   - Start an isolated Chrome debugging session when one is not already available:
-     `/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --user-data-dir=/tmp/slabsense-chrome`
+   - Ensure an isolated Chrome debugging session is available:
+     `node scripts/ensure_chrome.js`
    - Then run: `node scripts/browser_listing.js <listing-url> --output listing.json`
    - Use `--screenshot listing.png` only when the recommendation depends on photo review, slab/cert visibility, seller terms shown in-page, or other visual evidence.
    - If the browser import returns `extraction_status: ok` or `partial`, use the extracted JSON and clearly label missing facts.

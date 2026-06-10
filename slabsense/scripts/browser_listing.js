@@ -2,9 +2,7 @@
 /* Fetch listing details from a real Chrome tab via the DevTools Protocol.
 
    Start Chrome first:
-   /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
-     --remote-debugging-port=9222 \
-     --user-data-dir=/tmp/slabsense-chrome
+   node slabsense/scripts/ensure_chrome.js
 */
 
 const fs = require("node:fs");
@@ -214,7 +212,7 @@ async function main() {
     target = await httpJson(`${args.debuggerUrl}/json/new?${encodeURIComponent(args.url)}`, "PUT");
   } catch (error) {
     console.error(`Could not connect to Chrome DevTools at ${args.debuggerUrl}.`);
-    console.error("Start Chrome with: /Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --remote-debugging-port=9222 --user-data-dir=/tmp/slabsense-chrome");
+    console.error("Start Chrome with: node slabsense/scripts/ensure_chrome.js");
     console.error(error.message);
     process.exit(2);
   }

@@ -26,12 +26,10 @@ SlabSense now treats comp validation as a regular part of every price recommenda
 
 ## Use Locally
 
-Start a dedicated Chrome debugging session once:
+Ensure a dedicated Chrome debugging session is available:
 
 ```bash
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
-  --remote-debugging-port=9222 \
-  --user-data-dir=/tmp/slabsense-chrome
+node slabsense/scripts/ensure_chrome.js
 ```
 
 Then import listing metadata from the page Chrome renders:
@@ -60,6 +58,8 @@ node slabsense/scripts/browser_listing.js \
 ```
 
 This reads the page as Chrome renders it, captures exposed image URLs, and can save a screenshot for manual photo review. If eBay shows a captcha or marketplace error inside Chrome, log in or complete the check in that Chrome window and rerun the command.
+
+The helper reuses `http://127.0.0.1:9222` when it is already running, otherwise it launches an isolated Chrome profile at `/tmp/slabsense-chrome`.
 
 `fetch_listing.py` is kept for offline parsing of saved HTML or explicit debugging. It is not the normal marketplace URL path.
 
