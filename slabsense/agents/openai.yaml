@@ -1,0 +1,3 @@
+display_name: SlabSense
+short_description: Analyze PSA Pokemon slab deals with local rubrics and no API key.
+default_prompt: Use SlabSense to analyze this graded Pokemon card listing.
