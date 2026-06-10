@@ -26,12 +26,16 @@ SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchase
 4. Prefer deterministic scripts when the user provides structured input files.
    - Analyze: `python3 scripts/analyze.py <listing.json> --comps <comps.csv>`
    - Prompt export: `python3 scripts/prompt.py <listing.json> --comps <comps.csv>`
-   - URL import: `python3 scripts/fetch_listing.py <listing-url> --output listing.json`
-   - Browser URL import: `node scripts/browser_listing.js <listing-url> --output listing.json --screenshot listing.png`
+   - Browser URL import: `node scripts/browser_listing.js <listing-url> --output listing.json`
+   - Add `--screenshot listing.png` only when photo or condition inspection is needed.
    - Evals: `python3 scripts/eval.py`
-5. For marketplace URLs, try the URL import script first.
-   - If the script returns `extraction_status: ok` or `partial`, use the extracted JSON and clearly label missing facts.
-   - If the script reports that the marketplace blocked access, use the browser URL import only when Chrome is already running with remote debugging enabled.
+5. For marketplace URLs, skip plain HTTP metadata fetching and use Chrome-backed import first.
+   - Start an isolated Chrome debugging session when one is not already available:
+     `/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --user-data-dir=/tmp/slabsense-chrome`
+   - Then run: `node scripts/browser_listing.js <listing-url> --output listing.json`
+   - Use `--screenshot listing.png` only when the recommendation depends on photo review, slab/cert visibility, seller terms shown in-page, or other visual evidence.
+   - If the browser import returns `extraction_status: ok` or `partial`, use the extracted JSON and clearly label missing facts.
+   - Do not run `fetch_listing.py` as a routine fallback for marketplace URLs; it is kept only for offline parsing of saved HTML or explicit debugging.
    - If both import paths are blocked, do not invent listing facts. Ask for the title, price, grade, photo observations, seller terms, and comps.
 6. Return a concise collector-facing recommendation:
    - verdict: Buy, Watch, or Pass

@@ -28,16 +28,23 @@ Required fields for deterministic scoring: `card_name`, `grade`, and `asking_pri
 
 ## URL Import
 
-Use the URL importer to create listing JSON when a marketplace exposes public metadata:
+Use the Chrome-backed importer to create listing JSON from marketplace URLs:
 
 ```bash
-python3 slabsense/scripts/fetch_listing.py \
-  "https://www.ebay.com/itm/123456789012" \
-  --output listing.json \
-  --pretty
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/slabsense-chrome
 ```
 
-The importer may produce `extraction_status: partial` when title, price, grade, or image metadata is missing. It may fail with `extraction_status: blocked` when eBay or another marketplace returns an error page, login wall, or bot protection. In blocked cases, manually provide listing facts rather than treating the URL as evidence.
+```bash
+node slabsense/scripts/browser_listing.js \
+  "https://www.ebay.com/itm/123456789012" \
+  --output listing.json
+```
+
+Add `--screenshot listing.png` only when the recommendation depends on visual evidence. The importer may produce `extraction_status: partial` when title, price, grade, or image metadata is missing. It may fail with `extraction_status: blocked` when eBay or another marketplace returns an error page, login wall, or bot protection. In blocked cases, manually provide listing facts rather than treating the URL as evidence.
+
+`fetch_listing.py` is kept for offline parsing of saved HTML or explicit debugging. Do not use it as the routine marketplace URL importer.
 
 ## Comps CSV
 

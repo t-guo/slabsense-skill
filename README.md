@@ -26,13 +26,20 @@ SlabSense now treats comp validation as a regular part of every price recommenda
 
 ## Use Locally
 
-Import public listing metadata from a marketplace URL:
+Start a dedicated Chrome debugging session once:
 
 ```bash
-python3 slabsense/scripts/fetch_listing.py \
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/slabsense-chrome
+```
+
+Then import listing metadata from the page Chrome renders:
+
+```bash
+node slabsense/scripts/browser_listing.js \
   "https://www.ebay.com/itm/123456789012" \
-  --output listing.json \
-  --pretty
+  --output listing.json
 ```
 
 Then analyze the generated JSON:
@@ -43,17 +50,7 @@ python3 slabsense/scripts/analyze.py listing.json \
   --pretty
 ```
 
-Marketplace URL import depends on the public metadata exposed by the page. If eBay returns a generic error page, login wall, or bot check, SlabSense will report that access was blocked instead of inventing title, price, photo, or seller facts.
-
-For eBay pages that block plain HTTP fetches, start a dedicated Chrome debugging session:
-
-```bash
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
-  --remote-debugging-port=9222 \
-  --user-data-dir=/tmp/slabsense-chrome
-```
-
-Then run the browser importer:
+Add a screenshot only when you need manual photo, cert, seller-term, or condition review:
 
 ```bash
 node slabsense/scripts/browser_listing.js \
@@ -63,6 +60,8 @@ node slabsense/scripts/browser_listing.js \
 ```
 
 This reads the page as Chrome renders it, captures exposed image URLs, and can save a screenshot for manual photo review. If eBay shows a captcha or marketplace error inside Chrome, log in or complete the check in that Chrome window and rerun the command.
+
+`fetch_listing.py` is kept for offline parsing of saved HTML or explicit debugging. It is not the normal marketplace URL path.
 
 Run the deterministic analyzer:
 
