@@ -17,11 +17,27 @@
   "buyer_intent": "personal_collection | investment | trade_candidate | unknown",
   "front_image_notes": "Visible crease near holo, decent centering.",
   "back_image_notes": "Back not shown.",
-  "photo_quality": "clear | mixed | poor | unknown"
+  "photo_quality": "clear | mixed | poor | unknown",
+  "extraction_status": "ok | partial | blocked",
+  "extraction_warnings": ["asking price was not found"],
+  "image_url": "https://..."
 }
 ```
 
 Required fields for deterministic scoring: `card_name`, `grade`, and `asking_price`.
+
+## URL Import
+
+Use the URL importer to create listing JSON when a marketplace exposes public metadata:
+
+```bash
+python3 slabsense/scripts/fetch_listing.py \
+  "https://www.ebay.com/itm/123456789012" \
+  --output listing.json \
+  --pretty
+```
+
+The importer may produce `extraction_status: partial` when title, price, grade, or image metadata is missing. It may fail with `extraction_status: blocked` when eBay or another marketplace returns an error page, login wall, or bot protection. In blocked cases, manually provide listing facts rather than treating the URL as evidence.
 
 ## Comps CSV
 

@@ -22,8 +22,12 @@ SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchase
 3. Prefer deterministic scripts when the user provides structured input files.
    - Analyze: `python3 scripts/analyze.py <listing.json> --comps <comps.csv>`
    - Prompt export: `python3 scripts/prompt.py <listing.json> --comps <comps.csv>`
+   - URL import: `python3 scripts/fetch_listing.py <listing-url> --output listing.json`
    - Evals: `python3 scripts/eval.py`
-4. Return a concise collector-facing recommendation:
+4. For marketplace URLs, try the URL import script first.
+   - If the script returns `extraction_status: ok` or `partial`, use the extracted JSON and clearly label missing facts.
+   - If the script reports that the marketplace blocked access, do not invent listing facts. Ask for the title, price, grade, photo observations, seller terms, and comps.
+5. Return a concise collector-facing recommendation:
    - verdict: Buy, Watch, or Pass
    - fair value range
    - suggested offer

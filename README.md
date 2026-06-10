@@ -24,6 +24,25 @@ Provide the card name, grade, asking price, listing notes, image observations, b
 
 ## Use Locally
 
+Import public listing metadata from a marketplace URL:
+
+```bash
+python3 slabsense/scripts/fetch_listing.py \
+  "https://www.ebay.com/itm/123456789012" \
+  --output listing.json \
+  --pretty
+```
+
+Then analyze the generated JSON:
+
+```bash
+python3 slabsense/scripts/analyze.py listing.json \
+  --comps slabsense/assets/sample-comps.csv \
+  --pretty
+```
+
+Marketplace URL import depends on the public metadata exposed by the page. If eBay returns a generic error page, login wall, or bot check, SlabSense will report that access was blocked instead of inventing title, price, photo, or seller facts.
+
 Run the deterministic analyzer:
 
 ```bash
