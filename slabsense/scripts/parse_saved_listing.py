@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Fetch a listing URL and convert exposed metadata into SlabSense JSON.
+"""Parse saved marketplace HTML into SlabSense listing JSON.
 
-This script uses only the Python standard library. It can read public page
-metadata when a marketplace exposes it, but it does not bypass bot protection,
-login walls, or marketplace errors.
+This script is for offline debugging of HTML captured by a browser or curl. It
+does not fetch marketplace URLs and is not the normal SlabSense import path.
 """
 
 from __future__ import annotations
@@ -15,15 +14,6 @@ import sys
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
-
-
-USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/125.0 Safari/537.36"
-)
 
 
 class ListingMetadataParser(HTMLParser):
@@ -80,20 +70,6 @@ def money_to_float(value: Any) -> float | None:
     if not match:
         return None
     return float(match.group(0).replace(",", ""))
-
-
-def fetch_url(url: str, timeout: int) -> str:
-    request = Request(
-        url,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-        },
-    )
-    with urlopen(request, timeout=timeout) as response:
-        charset = response.headers.get_content_charset() or "utf-8"
-        return response.read().decode(charset, errors="replace")
 
 
 def iter_json_objects(raw: str) -> list[Any]:
@@ -240,28 +216,14 @@ def parse_listing(html: str, url: str) -> tuple[dict[str, Any], list[str]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Convert a public listing URL into SlabSense listing JSON.")
-    parser.add_argument("url")
+    parser = argparse.ArgumentParser(description="Parse saved marketplace HTML into SlabSense listing JSON.")
+    parser.add_argument("html_file", type=Path)
+    parser.add_argument("--url", default="", help="Original listing URL to include in output.")
     parser.add_argument("--output", "-o", type=Path)
-    parser.add_argument("--html-file", type=Path, help="Parse saved listing HTML instead of fetching the URL.")
-    parser.add_argument("--timeout", type=int, default=20)
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args()
 
-    if args.html_file:
-        html = args.html_file.read_text(encoding="utf-8")
-    else:
-        try:
-            html = fetch_url(args.url, args.timeout)
-        except HTTPError as exc:
-            print(f"Could not fetch listing: HTTP {exc.code}", file=sys.stderr)
-            return 2
-        except URLError as exc:
-            print(f"Could not fetch listing: {exc.reason}", file=sys.stderr)
-            return 2
-        except TimeoutError:
-            print("Could not fetch listing: request timed out", file=sys.stderr)
-            return 2
+    html = args.html_file.read_text(encoding="utf-8")
 
     listing, warnings = parse_listing(html, args.url)
     if listing.get("extraction_status") == "blocked":

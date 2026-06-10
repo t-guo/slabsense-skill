@@ -44,7 +44,16 @@ Add `--screenshot listing.png` only when the recommendation depends on visual ev
 
 The importer may produce `extraction_status: partial` when title, price, grade, or image metadata is missing. It may fail with `extraction_status: blocked` when eBay or another marketplace returns an error page, login wall, or bot protection. In blocked cases, manually provide listing facts rather than treating the URL as evidence.
 
-`fetch_listing.py` is kept for offline parsing of saved HTML or explicit debugging. Do not use it as the routine marketplace URL importer.
+Use `parse_saved_listing.py` only for offline parsing of already-saved HTML or explicit debugging:
+
+```bash
+python3 slabsense/scripts/parse_saved_listing.py saved-listing.html \
+  --url "https://www.ebay.com/itm/123456789012" \
+  --output listing.json \
+  --pretty
+```
+
+Do not use plain HTTP fetching as the routine marketplace URL importer.
 
 ## Temp Cleanup
 

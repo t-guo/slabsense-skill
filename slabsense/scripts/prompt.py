@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export a SlabSense prompt for Codex/ChatGPT without API calls."""
+"""Export a SlabSense prompt for agent chats without API calls."""
 
 from __future__ import annotations
 

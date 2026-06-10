@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+
+# Local SlabSense extraction outputs
+listing.json
+listing.png
+slabsense-listing-*.json
+slabsense-listing-*.png
+*.tmp
+
+# Optional local cache/work dirs
+.slabsense/

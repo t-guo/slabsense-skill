@@ -5,7 +5,7 @@ description: Analyze PSA-graded Pokemon card listings as SlabSense, an AI TCG de
 
 # SlabSense
 
-SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchases. It is designed to work without API keys: Codex provides the reasoning layer, while bundled scripts provide deterministic scoring, prompt export, and eval checks.
+SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card purchases. It is designed to work without API keys: the hosting agent provides the reasoning layer, while bundled scripts provide deterministic scoring, prompt export, browser-backed listing capture, temp cleanup, and eval checks. It can run in Codex, Claude Code, or another local agent environment that can read this skill folder and execute Python/Node scripts.
 
 ## Workflow
 
@@ -28,6 +28,7 @@ SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchase
    - Prompt export: `python3 scripts/prompt.py <listing.json> --comps <comps.csv>`
    - Chrome warm check: `node scripts/ensure_chrome.js`
    - Browser URL import: `node scripts/browser_listing.js <listing-url> --output listing.json`
+   - Saved HTML parser: `python3 scripts/parse_saved_listing.py <saved-listing.html> --url <listing-url> --output listing.json`
    - Add `--screenshot listing.png` only when photo or condition inspection is needed.
    - Temp cleanup preview: `python3 scripts/cleanup_tmp.py`
    - Temp cleanup execute: `python3 scripts/cleanup_tmp.py --execute`
@@ -38,7 +39,7 @@ SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchase
    - Then run: `node scripts/browser_listing.js <listing-url> --output listing.json`
    - Use `--screenshot listing.png` only when the recommendation depends on photo review, slab/cert visibility, seller terms shown in-page, or other visual evidence.
    - If the browser import returns `extraction_status: ok` or `partial`, use the extracted JSON and clearly label missing facts.
-   - Do not run `fetch_listing.py` as a routine fallback for marketplace URLs; it is kept only for offline parsing of saved HTML or explicit debugging.
+   - Do not use plain HTTP fetching as a routine fallback for marketplace URLs. Use `parse_saved_listing.py` only for offline parsing of already-saved HTML or explicit debugging.
    - If both import paths are blocked, do not invent listing facts. Ask for the title, price, grade, photo observations, seller terms, and comps.
    - Screenshots and listing JSON are not stored inside `/tmp/slabsense-chrome`; that path is the isolated Chrome profile. Use `python3 scripts/cleanup_tmp.py` to preview removable `/private/tmp/slabsense-*` artifacts, and add `--execute` to delete them.
 6. Return a concise collector-facing recommendation:
@@ -88,4 +89,4 @@ When possible, include this JSON-compatible structure after the prose summary:
 
 ## Local-Only Constraint
 
-Do not require OpenAI API keys or paid model calls. If the user wants model-backed analysis outside Codex, suggest exporting a prompt or using a local model runner such as Ollama/LM Studio as an optional follow-up, not a requirement.
+Do not require API keys or paid model calls. If the user wants model-backed analysis outside the current agent, suggest exporting a prompt or using another local/hosted model as an optional follow-up, not a requirement. If the current surface cannot run Chrome DevTools automation, ask for structured listing facts, saved HTML, screenshots, or manually sourced comps instead of inventing listing facts.
