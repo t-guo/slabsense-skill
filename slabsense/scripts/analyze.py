@@ -58,6 +58,7 @@ class Comp:
     sold_price: float
     sold_date: str
     source: str
+    confidence: str
     notes: str
 
 
@@ -92,6 +93,7 @@ def load_comps(path: Path | None) -> list[Comp]:
                     sold_price=price,
                     sold_date=row.get("sold_date", ""),
                     source=row.get("source", ""),
+                    confidence=row.get("confidence", ""),
                     notes=row.get("notes", ""),
                 )
             )
@@ -241,9 +243,30 @@ def score(listing: dict[str, Any], comps: list[Comp]) -> dict[str, Any]:
             "sold_price": comp.sold_price,
             "sold_date": comp.sold_date,
             "source": comp.source,
+            "confidence": comp.confidence or "high",
             "notes": comp.notes,
         }
         for comp in same_grade[:8]
+    ]
+    comp_sources_checked = [
+        {
+            "source": source,
+            "status": "checked",
+            "notes": "Provided comps CSV",
+        }
+        for source in sorted({comp.source for comp in comps if comp.source})
+    ]
+    nearby_context = [
+        {
+            "price": comp.sold_price,
+            "sold_date": comp.sold_date,
+            "source": comp.source,
+            "type": "nearby grade sold comp",
+            "grade": comp.grade,
+            "confidence": comp.confidence or "low",
+            "notes": comp.notes,
+        }
+        for comp in nearby_grade[:8]
     ]
     if nearby_grade and not same_grade:
         red_flags.append("only nearby-grade comps were found; value confidence is limited")
@@ -265,7 +288,9 @@ def score(listing: dict[str, Any], comps: list[Comp]) -> dict[str, Any]:
             )
             if note
         ],
+        "comp_sources_checked": comp_sources_checked,
         "comp_summary": comp_summary,
+        "nearby_grade_or_active_ask_context": nearby_context,
         "red_flags": sorted(set(red_flags)),
         "missing_info": miss,
         "collector_summary": build_summary(listing, verdict, low, high, suggested, regret),

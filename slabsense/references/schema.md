@@ -44,10 +44,43 @@ The importer may produce `extraction_status: partial` when title, price, grade, 
 Columns:
 
 ```csv
-card_name,set,year,language,grade,sold_price,sold_date,source,cert_number,notes
+card_name,set,year,language,grade,sold_price,sold_date,source,cert_number,confidence,notes
 ```
 
 The analyzer prioritizes same card, same language, same grade, and recent sales. Nearby-grade comps are weaker evidence and should be labeled as such.
+
+## Comp Sources
+
+Recommendations should include comp provenance:
+
+```json
+{
+  "comp_sources_checked": [
+    {
+      "source": "Fanatics Collect",
+      "status": "checked | blocked | unavailable",
+      "notes": "Visible in-page sales history"
+    }
+  ],
+  "comp_summary": [
+    {
+      "sold_price": 1075,
+      "sold_date": "2026-06-01",
+      "source": "Fanatics Collect",
+      "confidence": "high",
+      "notes": "Exact PSA 8 same-card sale"
+    }
+  ],
+  "nearby_grade_or_active_ask_context": [
+    {
+      "price": 1250,
+      "source": "eBay",
+      "type": "active ask",
+      "notes": "Not used as a sold comp"
+    }
+  ]
+}
+```
 
 ## Output JSON
 
@@ -62,7 +95,9 @@ The analyzer prioritizes same card, same language, same grade, and recent sales.
   "regret_risk_score": 0,
   "confidence": 0,
   "condition_notes": [],
+  "comp_sources_checked": [],
   "comp_summary": [],
+  "nearby_grade_or_active_ask_context": [],
   "red_flags": [],
   "missing_info": [],
   "collector_summary": ""

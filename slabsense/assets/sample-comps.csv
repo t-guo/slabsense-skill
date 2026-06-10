@@ -1,5 +1,5 @@
-card_name,set,year,language,grade,sold_price,sold_date,source,cert_number,notes
-Charizard Gold Star,EX Dragon Frontiers,2006,English,3,980,2026-04-08,eBay,,clear front and back photos
-Charizard Gold Star,EX Dragon Frontiers,2006,English,3,1075,2026-05-19,eBay,,strong eye appeal for grade
-Charizard Gold Star,EX Dragon Frontiers,2006,English,3,925,2026-03-30,eBay,,visible wear
-Charizard Gold Star,EX Dragon Frontiers,2006,English,4,1400,2026-05-02,eBay,,nearby grade only
+card_name,set,year,language,grade,sold_price,sold_date,source,cert_number,confidence,notes
+Charizard Gold Star,EX Dragon Frontiers,2006,English,3,980,2026-04-08,eBay,,high,clear front and back photos
+Charizard Gold Star,EX Dragon Frontiers,2006,English,3,1075,2026-05-19,eBay,,high,strong eye appeal for grade
+Charizard Gold Star,EX Dragon Frontiers,2006,English,3,925,2026-03-30,eBay,,high,visible wear
+Charizard Gold Star,EX Dragon Frontiers,2006,English,4,1400,2026-05-02,eBay,,low,nearby grade only

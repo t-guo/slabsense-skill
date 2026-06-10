@@ -19,25 +19,33 @@ SlabSense is a local Codex skill for evaluating PSA-graded Pokemon card purchase
    - Never invent PSA population data, cert facts, sold prices, seller terms, or condition flaws.
    - Mark unavailable facts as missing information.
    - Use cautious condition language when photos are weak.
-3. Prefer deterministic scripts when the user provides structured input files.
+3. Run comp sourcing as a regular part of deal analysis.
+   - Use [references/comp-sourcing.md](references/comp-sourcing.md) for exact-match sold comp sourcing, source confidence, and conflict handling.
+   - Separate exact sold comps, nearby-grade comps, active asks, and marketplace in-page sales history.
+   - If current web access or source pages are blocked, state which comp sources could not be checked and lower confidence.
+4. Prefer deterministic scripts when the user provides structured input files.
    - Analyze: `python3 scripts/analyze.py <listing.json> --comps <comps.csv>`
    - Prompt export: `python3 scripts/prompt.py <listing.json> --comps <comps.csv>`
    - URL import: `python3 scripts/fetch_listing.py <listing-url> --output listing.json`
+   - Browser URL import: `node scripts/browser_listing.js <listing-url> --output listing.json --screenshot listing.png`
    - Evals: `python3 scripts/eval.py`
-4. For marketplace URLs, try the URL import script first.
+5. For marketplace URLs, try the URL import script first.
    - If the script returns `extraction_status: ok` or `partial`, use the extracted JSON and clearly label missing facts.
-   - If the script reports that the marketplace blocked access, do not invent listing facts. Ask for the title, price, grade, photo observations, seller terms, and comps.
-5. Return a concise collector-facing recommendation:
+   - If the script reports that the marketplace blocked access, use the browser URL import only when Chrome is already running with remote debugging enabled.
+   - If both import paths are blocked, do not invent listing facts. Ask for the title, price, grade, photo observations, seller terms, and comps.
+6. Return a concise collector-facing recommendation:
    - verdict: Buy, Watch, or Pass
    - fair value range
    - suggested offer
    - downside, liquidity, regret risk, confidence
+   - comp sources checked and exact sold comps used
    - top risks, red flags, missing information
    - short rationale grounded in supplied evidence
 
 ## Decision Guidance
 
 Use [references/risk-rubric.md](references/risk-rubric.md) for scoring rules and red flags.
+Use [references/comp-sourcing.md](references/comp-sourcing.md) for comp source hierarchy and fair-value evidence requirements.
 Use [references/schema.md](references/schema.md) for accepted input and output fields.
 Use [references/examples.md](references/examples.md) when the user wants examples or asks how to format data.
 
@@ -62,7 +70,9 @@ When possible, include this JSON-compatible structure after the prose summary:
   "regret_risk_score": 0,
   "confidence": 0,
   "condition_notes": [],
+  "comp_sources_checked": [],
   "comp_summary": [],
+  "nearby_grade_or_active_ask_context": [],
   "red_flags": [],
   "missing_info": [],
   "collector_summary": ""

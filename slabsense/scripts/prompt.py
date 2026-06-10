@@ -36,6 +36,7 @@ def main() -> int:
             "Do not invent PSA population data, cert facts, sold prices, seller terms, or condition flaws.",
             "Separate supplied facts from inferences.",
             "Use cautious condition language when photos are weak.",
+            "Check exact same-card same-grade sold comps when possible, separate active asks and nearby-grade comps, and label comp source confidence.",
             "Return Buy, Watch, or Pass with fair value, suggested offer, downside, liquidity, regret risk, confidence, red flags, missing info, and collector summary.",
         ],
         "listing": listing,
