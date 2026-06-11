@@ -25,12 +25,14 @@ SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card purch
 3. Run comp sourcing as a regular part of deal analysis.
    - Use [references/comp-sourcing.md](references/comp-sourcing.md) for exact-match sold comp sourcing, source confidence, and conflict handling.
    - Separate exact sold comps, nearby-grade comps, active asks, and marketplace in-page sales history.
+   - For sourced low-pop/high-demand chase cards, let the fair-value range incorporate a transparent scarcity premium above the mechanical recent-comp band.
    - If current web access or source pages are blocked, state which comp sources could not be checked and lower confidence.
 4. Prefer deterministic scripts when the user provides structured input files.
    - Analyze: `python3 scripts/analyze.py <listing.json> --comps <comps.csv>`
    - Prompt export: `python3 scripts/prompt.py <listing.json> --comps <comps.csv>`
    - Chrome warm check: `node scripts/ensure_chrome.js`
    - Browser URL import: `node scripts/browser_listing.js <listing-url> --output listing.json`
+   - PriceCharting parser: `python3 scripts/pricecharting.py --set <set> --card-title <card-title> --card-number <number> --grade <grade>`
    - Saved HTML parser: `python3 scripts/parse_saved_listing.py <saved-listing.html> --url <listing-url> --output listing.json`
    - Add `--screenshot listing.png` only when photo or condition inspection is needed.
    - Temp cleanup preview: `python3 scripts/cleanup_tmp.py`
@@ -45,6 +47,7 @@ SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card purch
    - Then run: `node scripts/browser_listing.js <listing-url> --output listing.json`
    - Use `--screenshot listing.png` only when the recommendation depends on photo review, slab/cert visibility, seller terms shown in-page, or other visual evidence.
    - If the browser import returns `extraction_status: ok` or `partial`, use the extracted JSON and clearly label missing facts.
+   - Use `pricecharting.py` or direct source pages to gather exact-grade sold comps and sourced population data when available.
    - Do not use plain HTTP fetching as a routine fallback for marketplace URLs. Use `parse_saved_listing.py` only for offline parsing of already-saved HTML or explicit debugging.
    - If both import paths are blocked, do not invent listing facts. Ask for the title, price, grade, photo observations, seller terms, and comps.
    - Screenshots and listing JSON are not stored inside `/tmp/slabsense-chrome`; that path is the isolated Chrome profile. Use `python3 scripts/cleanup_tmp.py` to preview removable `/private/tmp/slabsense-*` artifacts, and add `--execute` to delete them.
@@ -76,6 +79,8 @@ When possible, include this JSON-compatible structure after the prose summary:
 ```json
 {
   "verdict": "buy | watch | pass",
+  "deal_verdict": "buy | watch | pass",
+  "hold_verdict": "low | medium | high",
   "fair_value_low": 0,
   "fair_value_high": 0,
   "suggested_offer": 0,

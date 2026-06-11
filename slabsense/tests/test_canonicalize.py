@@ -34,6 +34,13 @@ class CanonicalizeTest(unittest.TestCase):
         self.assertEqual(result["card_number_full"], "GG69/GG70")
         self.assertEqual(result["set"], "Crown Zenith")
 
+    def test_ex_dragon_frontiers_gold_star_charizard(self) -> None:
+        result = canonicalize_title("2006 POKEMON EX DRAGON FRONTIERS GOLD STAR #100 CHARIZARD-HOLO PSA 3 | eBay")
+        self.assertEqual(result["canonical_card_name"], "Charizard Gold Star #100 EX Dragon Frontiers PSA 3")
+        self.assertEqual(result["card_title"], "Charizard Gold Star")
+        self.assertEqual(result["card_number"], "100")
+        self.assertEqual(result["set"], "EX Dragon Frontiers")
+
 
 if __name__ == "__main__":
     unittest.main()

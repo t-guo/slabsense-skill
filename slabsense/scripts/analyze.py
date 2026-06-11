@@ -133,7 +133,7 @@ def relevant_comps(listing: dict[str, Any], comps: list[Comp]) -> tuple[list[Com
     return same_grade, nearby_grade
 
 
-def value_range(comps: list[Comp]) -> tuple[int, int] | tuple[None, None]:
+def base_value_range(comps: list[Comp]) -> tuple[int, int] | tuple[None, None]:
     if not comps:
         return None, None
     prices = sorted(comp.sold_price for comp in comps)
@@ -178,6 +178,61 @@ def psa_population(listing: dict[str, Any]) -> tuple[int | None, int | None, str
     )
 
 
+def scarcity_premium_rates(listing: dict[str, Any], comp_count: int) -> tuple[float, float]:
+    grade_pop, total_pop, pop_source = psa_population(listing)
+    if grade_pop is None or not pop_source:
+        return 0.0, 0.0
+
+    blob = text_blob(listing)
+    is_major = any(term in blob for term in MAJOR_CARD_TERMS)
+    is_chase = any(term in blob for term in CHASE_CARD_TERMS)
+    if not (is_major or is_chase):
+        return 0.0, 0.0
+
+    low_premium = 0.0
+    high_premium = 0.0
+    if grade_pop <= 100:
+        low_premium += 0.10
+        high_premium += 0.26
+    elif grade_pop <= 500:
+        low_premium += 0.06
+        high_premium += 0.20
+    elif grade_pop <= 2000:
+        low_premium += 0.02
+        high_premium += 0.10
+    else:
+        return 0.0, 0.0
+
+    if total_pop is not None and total_pop > 0 and grade_pop / total_pop <= 0.2:
+        low_premium += 0.01
+        high_premium += 0.04
+
+    year = parse_float(listing.get("year"))
+    if year and year <= 2010 and is_chase:
+        high_premium += 0.03
+
+    if comp_count < 3:
+        high_premium += 0.05
+
+    return min(low_premium, 0.12), min(high_premium, 0.30)
+
+
+def value_range(listing: dict[str, Any], comps: list[Comp]) -> tuple[int, int] | tuple[None, None]:
+    low, high = base_value_range(comps)
+    if low is None or high is None or len(comps) < 3:
+        return low, high
+
+    prices = sorted(comp.sold_price for comp in comps)
+    midpoint = statistics.median(prices)
+    low_premium, high_premium = scarcity_premium_rates(listing, len(comps))
+    if low_premium == 0 and high_premium == 0:
+        return low, high
+
+    premium_low = round(midpoint * (1 + low_premium))
+    premium_high = round(midpoint * (1 + high_premium))
+    return max(low, premium_low), max(high, premium_high)
+
+
 def missing_info(listing: dict[str, Any], comps: list[Comp]) -> list[str]:
     missing: list[str] = []
     for field, label in (
@@ -189,6 +244,10 @@ def missing_info(listing: dict[str, Any], comps: list[Comp]) -> list[str]:
             missing.append(label)
     if not comps:
         missing.append("relevant sold comps")
+    if parse_float(listing.get("seller_feedback_count")) is None:
+        missing.append("seller feedback data")
+    if not str(listing.get("return_policy", "")).strip():
+        missing.append("return policy")
     grade_pop, total_pop, pop_source = psa_population(listing)
     if grade_pop is None and total_pop is None:
         missing.append("PSA population data")
@@ -292,7 +351,7 @@ def investability(
 def score(listing: dict[str, Any], comps: list[Comp]) -> dict[str, Any]:
     asking = parse_float(listing.get("asking_price")) or 0
     same_grade, nearby_grade = relevant_comps(listing, comps)
-    low, high = value_range(same_grade)
+    low, high = value_range(listing, same_grade)
     blob = text_blob(listing)
     miss = missing_info(listing, same_grade)
 
@@ -331,6 +390,14 @@ def score(listing: dict[str, Any], comps: list[Comp]) -> dict[str, Any]:
     if any(term in blob for term in SELLER_RISK_TERMS):
         regret += 15
         red_flags.append("seller/listing risk concern is present")
+    seller_feedback = parse_float(listing.get("seller_feedback_count"))
+    seller_positive = parse_float(listing.get("seller_positive_percent"))
+    if seller_feedback is not None and seller_feedback < 50 and asking >= 1000:
+        regret += 8
+        red_flags.append("seller feedback count is low for a high-value slab")
+    if seller_positive is not None and seller_positive < 98:
+        regret += 10
+        red_flags.append("seller positive feedback is below 98%")
     if len(miss) >= 3:
         regret += 10
     if listing.get("buyer_intent") == "personal_collection":
@@ -401,6 +468,8 @@ def score(listing: dict[str, Any], comps: list[Comp]) -> dict[str, Any]:
 
     return {
         "verdict": verdict,
+        "deal_verdict": verdict,
+        "hold_verdict": investment["hold_quality"],
         "fair_value_low": low or 0,
         "fair_value_high": high or 0,
         "suggested_offer": suggested,
@@ -422,13 +491,14 @@ def score(listing: dict[str, Any], comps: list[Comp]) -> dict[str, Any]:
         "nearby_grade_or_active_ask_context": nearby_context,
         "red_flags": sorted(set(red_flags)),
         "missing_info": miss,
-        "collector_summary": build_summary(listing, verdict, low, high, suggested, regret),
+        "collector_summary": build_summary(listing, verdict, investment["hold_quality"], low, high, suggested, regret),
     }
 
 
 def build_summary(
     listing: dict[str, Any],
     verdict: str,
+    hold_quality: str,
     low: int | None,
     high: int | None,
     suggested: int,
@@ -442,8 +512,35 @@ def build_summary(
         value_text = f"Estimated fair value is ${low:,}-${high:,}; suggested offer is ${suggested:,}."
     return (
         f"{card}: {verdict.upper()} at ${asking:,.0f}. "
-        f"{value_text} Regret risk is {regret}/100."
+        f"{value_text} Hold quality is {hold_quality}. Regret risk is {regret}/100."
     )
+
+
+def render_text(result: dict[str, Any]) -> str:
+    low = result.get("fair_value_low") or 0
+    high = result.get("fair_value_high") or 0
+    suggested = result.get("suggested_offer") or 0
+    value_text = f"${low:,}-${high:,}" if low and high else "not available"
+    offer_text = f"${suggested:,}" if suggested else "not available"
+    lines = [
+        result["collector_summary"],
+        "",
+        f"Deal verdict: {str(result['deal_verdict']).upper()}",
+        f"Hold quality: {str(result['hold_verdict']).upper()}",
+        f"Fair value: {value_text}",
+        f"Suggested offer: {offer_text}",
+        f"Liquidity / Investability / Regret: {result['liquidity_score']}/100 / {result['investability_score']}/100 / {result['regret_risk_score']}/100",
+    ]
+    if result.get("investment_thesis"):
+        lines.extend(["", "Investment thesis:"])
+        lines.extend(f"- {item}" for item in result["investment_thesis"])
+    if result.get("red_flags"):
+        lines.extend(["", "Red flags:"])
+        lines.extend(f"- {item}" for item in result["red_flags"])
+    if result.get("missing_info"):
+        lines.extend(["", "Missing info:"])
+        lines.extend(f"- {item}" for item in result["missing_info"])
+    return "\n".join(lines)
 
 
 def main() -> int:
@@ -451,12 +548,16 @@ def main() -> int:
     parser.add_argument("listing", type=Path)
     parser.add_argument("--comps", type=Path)
     parser.add_argument("--pretty", action="store_true")
+    parser.add_argument("--format", choices=("json", "text", "both"), default="json")
     args = parser.parse_args()
 
     listing = load_listing(args.listing)
     result = score(listing, load_comps(args.comps))
-    if args.pretty:
-        print(result["collector_summary"])
+    output_format = "both" if args.pretty else args.format
+    if output_format == "text":
+        print(render_text(result))
+    elif output_format == "both":
+        print(render_text(result))
         print(json.dumps(result, indent=2))
     else:
         print(json.dumps(result, indent=2))

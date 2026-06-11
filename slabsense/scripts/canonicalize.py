@@ -11,6 +11,8 @@ from typing import Any
 
 
 SET_ALIASES = (
+    ("ex dragon frontiers", "EX Dragon Frontiers"),
+    ("dragon frontiers", "EX Dragon Frontiers"),
     ("crown zenith", "Crown Zenith"),
     ("shining fates", "Shining Fates"),
     ("celebrations classic collection", "Celebrations Classic Collection"),
@@ -77,6 +79,14 @@ def title_case_name(value: str) -> str:
         else:
             words.append(word[:1].upper() + word[1:].lower())
     return clean_text(" ".join(words))
+
+
+def normalize_card_title(value: str) -> str:
+    value = title_case_name(value)
+    match = re.fullmatch(r"Gold Star (.+)", value, flags=re.I)
+    if match:
+        return clean_text(f"{match.group(1)} Gold Star")
+    return value
 
 
 def strip_market_suffix(title: str) -> str:
@@ -170,7 +180,7 @@ def canonicalize_title(title: str, grading_company: str = "", grade: float | Non
     card_number = comp_card_number(card_number_full)
     language = extract_language(raw_title)
     set_name = extract_set(raw_title)
-    name = title_case_name(remove_known_parts(raw_title, grading_company, grade, year, card_number_full))
+    name = normalize_card_title(remove_known_parts(raw_title, grading_company, grade, year, card_number_full))
 
     parts = [name]
     if card_number:

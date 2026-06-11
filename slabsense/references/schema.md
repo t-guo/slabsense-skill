@@ -18,6 +18,12 @@
   "psa_population_source": "PSA Pop Report",
   "cert_number": "12345678",
   "asking_price": 1200,
+  "seller_username": "seller123",
+  "seller_feedback_count": 250,
+  "seller_positive_percent": 99.8,
+  "authenticity_guarantee": true,
+  "return_policy": "30 day returns",
+  "item_location": "California, United States",
   "listing_url": "https://...",
   "listing_notes": "Seller says clean front, back photo missing.",
   "buyer_intent": "personal_collection | investment | trade_candidate | unknown",
@@ -142,9 +148,13 @@ Recommendations should include comp provenance:
 
 ## Output JSON
 
+`fair_value_low` and `fair_value_high` should represent the app's grounded market-value range. For normal cards this is mostly exact same-grade sold comps. For sourced low-pop/high-demand chase cards, this range may include a transparent scarcity premium over the mechanical recent-comp band.
+
 ```json
 {
   "verdict": "buy | watch | pass",
+  "deal_verdict": "buy | watch | pass",
+  "hold_verdict": "low | medium | high",
   "fair_value_low": 0,
   "fair_value_high": 0,
   "suggested_offer": 0,

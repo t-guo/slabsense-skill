@@ -145,6 +145,10 @@ function extractionExpression() {
     const gradeMatch = title.match(/\\b(PSA|CGC|BGS|SGC)\\s*(?:GEM\\s*MT|MINT|NM-MT|MT)?\\s*(\\d+(?:\\.\\d)?)\\b/i);
     const priceText = priceCandidates.find((candidate) => /\\d/.test(candidate)) || "";
     const priceMatch = priceText.match(/\\d+(?:,\\d{3})*(?:\\.\\d+)?/);
+    const sellerMatch = pageText.match(/\\b([A-Za-z0-9_.-]{2,})\\s*\\((\\d[\\d,]*)\\)\\s*(\\d+(?:\\.\\d+)?)%\\s*positive\\b/i);
+    const certMatch = pageText.match(/\\b(?:cert(?:ification)?|PSA\\s*cert)\\D*(\\d{7,10})\\b/i);
+    const locationMatch = pageText.match(/(?:Item location|Located in)[:\\s]+([^\\n.]{3,80})/i);
+    const returnMatch = pageText.match(/(Seller does not accept returns|No returns|Returns accepted|30 day returns|60 day returns)/i);
     const blocked = /Something went wrong on our end|robot check|captcha|Access Denied/i.test(pageText + " " + title);
     const cleanTitle = title
       .replace(/\\s*\\|\\s*eBay\\s*$/i, "")
@@ -158,6 +162,13 @@ function extractionExpression() {
       price: priceMatch ? Number(priceMatch[0].replace(/,/g, "")) : null,
       gradingCompany: gradeMatch ? gradeMatch[1].toUpperCase() : "",
       grade: gradeMatch ? Number(gradeMatch[2]) : null,
+      certNumber: certMatch ? certMatch[1] : "",
+      sellerUsername: sellerMatch ? sellerMatch[1] : "",
+      sellerFeedbackCount: sellerMatch ? Number(sellerMatch[2].replace(/,/g, "")) : null,
+      sellerPositivePercent: sellerMatch ? Number(sellerMatch[3]) : null,
+      authenticityGuarantee: /Authenticity Guarantee/i.test(pageText),
+      returnPolicy: returnMatch ? returnMatch[1] : "",
+      itemLocation: locationMatch ? locationMatch[1].trim() : "",
       imageUrls: uniqueImages,
       blocked,
       visibleTextSample: pageText.slice(0, 500)
@@ -194,6 +205,7 @@ function toListing(url, extracted) {
     language: canonical.language || "",
     grading_company: canonical.grading_company || extracted.gradingCompany || "",
     grade: canonical.grade ?? extracted.grade,
+    cert_number: extracted.certNumber || "",
     asking_price: extracted.price,
     listing_url: url,
     listing_notes: `Browser title: ${extracted.title || "not exposed"}. ${
@@ -203,6 +215,12 @@ function toListing(url, extracted) {
     front_image_notes: "",
     back_image_notes: "",
     photo_quality: "unknown",
+    seller_username: extracted.sellerUsername || "",
+    seller_feedback_count: extracted.sellerFeedbackCount,
+    seller_positive_percent: extracted.sellerPositivePercent,
+    authenticity_guarantee: Boolean(extracted.authenticityGuarantee),
+    return_policy: extracted.returnPolicy || "",
+    item_location: extracted.itemLocation || "",
     extraction_status: warnings.length ? "partial" : "ok",
     extraction_warnings: warnings,
     image_urls: extracted.imageUrls,

@@ -2,6 +2,8 @@
 
 SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card listings. It is designed for Codex, Claude, and other local agents that can read a skill folder and run bundled scripts. It turns a listing URL or structured card facts into a collector-facing Buy / Watch / Pass recommendation with comps, fair value, offer guidance, downside, liquidity, investability, regret risk, confidence, red flags, and missing information.
 
+Fair value is comp-anchored but not blindly limited to the last few sales. When a card has sourced low population and strong chase demand, the analyzer can include a scarcity premium in the fair-value range.
+
 It does not require API keys. The agent provides the reasoning layer; the bundled scripts handle listing capture, deterministic scoring, prompt export, temp cleanup, and smoke evals.
 
 ## Install
@@ -82,7 +84,19 @@ Analyze structured listing data:
 ```bash
 python3 slabsense/scripts/analyze.py listing.json \
   --comps slabsense/assets/sample-comps.csv \
-  --pretty
+  --format text
+```
+
+Use `--format json` for machine-readable output or `--format both` when you want readable text plus the full JSON payload.
+
+Parse PriceCharting price or population pages:
+
+```bash
+python3 slabsense/scripts/pricecharting.py \
+  --set "EX Dragon Frontiers" \
+  --card-title "Charizard Gold Star" \
+  --card-number 100 \
+  --grade 3
 ```
 
 Parse saved marketplace HTML for debugging:

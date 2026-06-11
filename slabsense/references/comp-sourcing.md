@@ -20,6 +20,7 @@ Use this process whenever a recommendation depends on price, especially for inve
    - If sources disagree by more than 15-20%, say so and lower confidence.
    - Prefer transparent sold rows over aggregate market numbers.
    - Treat outliers as context unless multiple recent sales support them.
+   - For sourced low-pop/high-demand chase cards, do not rely only on the last few sales as a hard ceiling. Use exact comps as the anchor, then allow a transparent scarcity premium in the fair-value range when population and demand support it.
 5. Only use nearby-grade comps as secondary context.
    - Do not blend PSA 7/9/10 into PSA 8 fair value unless exact-grade comps are unavailable.
    - Clearly mark any grade-adjusted inference.
