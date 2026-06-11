@@ -123,6 +123,12 @@ Run the smoke eval:
 python3 slabsense/scripts/eval.py
 ```
 
+Run the focused unit tests:
+
+```bash
+python3 -m unittest discover -s slabsense/tests
+```
+
 ## Repo Structure
 
 ```text
@@ -131,7 +137,8 @@ slabsense/
 ├── agents/
 ├── assets/
 ├── references/
-└── scripts/
+├── scripts/
+└── tests/
 ```
 
 The `slabsense/` folder is the skill package. Keep repo documentation like this README outside the skill folder.
