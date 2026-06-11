@@ -34,6 +34,9 @@ SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card purch
    - Temp cleanup execute: `python3 scripts/cleanup_tmp.py --execute`
    - Evals: `python3 scripts/eval.py`
 5. For marketplace URLs, skip plain HTTP metadata fetching and use Chrome-backed import first.
+   - First run conservative temp cleanup:
+     `python3 scripts/cleanup_tmp.py --execute`
+   - This deletes only matching `/private/tmp/slabsense-*` artifacts older than 24 hours. Do not use `--all` or `--profile` automatically.
    - Ensure an isolated Chrome debugging session is available:
      `node scripts/ensure_chrome.js`
    - Then run: `node scripts/browser_listing.js <listing-url> --output listing.json`

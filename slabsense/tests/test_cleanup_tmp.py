@@ -6,7 +6,9 @@ from __future__ import annotations
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
+import os
 from pathlib import Path
 
 
@@ -47,6 +49,22 @@ class CleanupTmpTest(unittest.TestCase):
             self.assertFalse(target.exists())
             self.assertTrue(keep_name.exists())
             self.assertTrue(keep_ext.exists())
+
+    def test_execute_default_keeps_current_run_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_dir = Path(tmp)
+            current = tmp_dir / "slabsense-listing-current.json"
+            stale = tmp_dir / "slabsense-listing-stale.json"
+            current.write_text("{}", encoding="utf-8")
+            stale.write_text("{}", encoding="utf-8")
+            old_time = time.time() - 25 * 60 * 60
+            os.utime(stale, (old_time, old_time))
+
+            executed = run_cleanup("--tmp-dir", str(tmp_dir), "--execute")
+            self.assertEqual(executed.returncode, 0)
+            self.assertIn(f"deleted {stale}", executed.stdout)
+            self.assertTrue(current.exists())
+            self.assertFalse(stale.exists())
 
     def test_cleanup_profile_is_opt_in(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

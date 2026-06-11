@@ -56,6 +56,7 @@ Marketplace URLs are browser-first. Plain HTTP fetching is not the normal path b
 For URL listings, a local agent should use:
 
 ```bash
+python3 slabsense/scripts/cleanup_tmp.py --execute
 node slabsense/scripts/ensure_chrome.js
 node slabsense/scripts/browser_listing.js "<listing-url>" --output listing.json
 ```
@@ -68,7 +69,7 @@ node slabsense/scripts/browser_listing.js "<listing-url>" \
   --screenshot listing.png
 ```
 
-The isolated Chrome profile lives at `/tmp/slabsense-chrome`. Screenshots, listing JSON, saved HTML, and extracted image files are separate temp artifacts, usually under `/private/tmp/slabsense-*`.
+The cleanup step deletes only matching `/private/tmp/slabsense-*` artifacts older than 24 hours. It does not delete the current run, and it does not delete the isolated Chrome profile. The isolated Chrome profile lives at `/tmp/slabsense-chrome`. Screenshots, listing JSON, saved HTML, and extracted image files are separate temp artifacts, usually under `/private/tmp/slabsense-*`.
 
 ## Local Scripts
 

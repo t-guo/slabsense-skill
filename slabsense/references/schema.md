@@ -31,6 +31,10 @@ Required fields for deterministic scoring: `card_name`, `grade`, and `asking_pri
 Use the Chrome-backed importer to create listing JSON from marketplace URLs:
 
 ```bash
+python3 slabsense/scripts/cleanup_tmp.py --execute
+```
+
+```bash
 node slabsense/scripts/ensure_chrome.js
 ```
 
@@ -39,6 +43,8 @@ node slabsense/scripts/browser_listing.js \
   "https://www.ebay.com/itm/123456789012" \
   --output listing.json
 ```
+
+The cleanup step deletes only matching `/private/tmp/slabsense-*` artifacts older than 24 hours. Do not use `--all` or `--profile` as part of automatic URL import.
 
 Add `--screenshot listing.png` only when the recommendation depends on visual evidence. `ensure_chrome.js` reuses `http://127.0.0.1:9222` when it is already running, otherwise it launches an isolated Chrome profile at `/tmp/slabsense-chrome`.
 
