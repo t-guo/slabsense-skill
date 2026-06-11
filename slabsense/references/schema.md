@@ -150,6 +150,39 @@ Recommendations should include comp provenance:
 
 `fair_value_low` and `fair_value_high` should represent the app's grounded market-value range. For normal cards this is mostly exact same-grade sold comps. For sourced low-pop/high-demand chase cards, this range may include a transparent scarcity premium over the mechanical recent-comp band.
 
+## Agent Response Template
+
+Agents using this skill should produce the same user-facing sections on every normal recommendation:
+
+```text
+SlabSense: BUY|WATCH|PASS
+
+<card_name> at <asking_price>. <one-sentence rationale>
+
+Fair value: <fair_value_low>-<fair_value_high>
+Suggested offer: <suggested_offer>
+Hold quality: LOW|MEDIUM|HIGH
+Liquidity / Investability / Regret: <liquidity_score>/100 / <investability_score>/100 / <regret_risk_score>/100
+Confidence: <confidence_percent>%
+
+Key facts:
+- <3-6 grounded listing/population/seller facts>
+
+Why:
+- <2-5 thesis/deal bullets>
+
+Risks:
+- <2-5 red flags or investment risks>
+
+Comps checked:
+- <source>: <status>; <brief notes>
+
+Missing info:
+- <missing fact, or "None material">
+```
+
+Use the raw `analyze.py --format text` terminal output only when the user asks to see what the terminal command prints.
+
 ```json
 {
   "verdict": "buy | watch | pass",

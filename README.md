@@ -89,6 +89,8 @@ python3 slabsense/scripts/analyze.py listing.json \
 
 Use `--format json` for machine-readable output or `--format both` when you want readable text plus the full JSON payload.
 
+Agent-facing SlabSense responses should follow the standard template in `slabsense/SKILL.md`: verdict header, one-line rationale, fair value, suggested offer, scores, key facts, why, risks, comps checked, and missing info. Raw terminal output is shown only when explicitly requested.
+
 Parse PriceCharting price or population pages:
 
 ```bash

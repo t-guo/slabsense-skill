@@ -51,14 +51,7 @@ SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card purch
    - Do not use plain HTTP fetching as a routine fallback for marketplace URLs. Use `parse_saved_listing.py` only for offline parsing of already-saved HTML or explicit debugging.
    - If both import paths are blocked, do not invent listing facts. Ask for the title, price, grade, photo observations, seller terms, and comps.
    - Screenshots and listing JSON are not stored inside `/tmp/slabsense-chrome`; that path is the isolated Chrome profile. Use `python3 scripts/cleanup_tmp.py` to preview removable `/private/tmp/slabsense-*` artifacts, and add `--execute` to delete them.
-6. Return a concise collector-facing recommendation:
-   - verdict: Buy, Watch, or Pass
-   - fair value range
-   - suggested offer
-   - downside, liquidity, investability, regret risk, confidence
-   - comp sources checked and exact sold comps used
-   - top risks, red flags, missing information
-   - short rationale grounded in supplied evidence
+6. Return the recommendation using the standard agent response template below.
 
 ## Decision Guidance
 
@@ -74,7 +67,80 @@ Use [references/schema.md](references/schema.md) for accepted input and output f
 
 ## Output Contract
 
-When possible, include this JSON-compatible structure after the prose summary:
+For user-facing agent responses, use this exact section order and labels. Keep it concise; omit a section only when the underlying data is unavailable.
+
+```text
+SlabSense: BUY|WATCH|PASS
+
+<card_name> at <asking_price>. <one-sentence rationale>
+
+Fair value: <fair_value_low>-<fair_value_high>
+Suggested offer: <suggested_offer>
+Hold quality: LOW|MEDIUM|HIGH
+Liquidity / Investability / Regret: <liquidity_score>/100 / <investability_score>/100 / <regret_risk_score>/100
+Confidence: <confidence_percent>%
+
+Key facts:
+- <grade/cert/price/seller terms/population facts; 3-6 bullets>
+
+Why:
+- <investment thesis and deal logic; 2-5 bullets>
+
+Risks:
+- <red flags and investment risks; 2-5 bullets>
+
+Comps checked:
+- <source>: <status>; <brief notes>
+
+Missing info:
+- <missing fact, or "None material">
+```
+
+Rules:
+
+- Start with `SlabSense: BUY`, `SlabSense: WATCH`, or `SlabSense: PASS`.
+- Use `fair_value_low` and `fair_value_high` as the displayed fair value.
+- Do not replace the standard fields with a custom JSON excerpt unless the user asks for JSON.
+- If the user asks for raw terminal output, paste `analyze.py --format text` output verbatim instead of this template.
+- Keep facts, inferences, and missing information separated.
+
+Example:
+
+```text
+SlabSense: PASS
+
+Charizard Gold Star #100 EX Dragon Frontiers PSA 3 at $4,800. High-quality investment card, but the entry price is above the scarcity-adjusted fair range.
+
+Fair value: $3,210-$3,810
+Suggested offer: $2,808
+Hold quality: HIGH
+Liquidity / Investability / Regret: 80/100 / 81/100 / 98/100
+Confidence: 87%
+
+Key facts:
+- PSA 3, cert 114114115
+- Seller feedback: 24, 100% positive
+- Returns: seller does not accept returns
+- PSA population: 377 in grade, 4,543 total from sourced population data
+
+Why:
+- Charizard Gold Star is a major chase card.
+- Recent same-grade sales support liquidity.
+- Low grade-pop share supports a scarcity premium.
+
+Risks:
+- Asking price is materially above fair value.
+- Seller feedback is low for a high-value slab.
+- No returns increases regret risk.
+
+Comps checked:
+- PriceCharting: checked; exact PSA 3 sales used.
+
+Missing info:
+- None material
+```
+
+When JSON is requested, include this JSON-compatible structure:
 
 ```json
 {
