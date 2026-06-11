@@ -17,12 +17,27 @@ from typing import Any
 
 MAJOR_CARD_TERMS = (
     "charizard",
+    "pikachu",
     "lugia",
     "mew",
+    "mewtwo",
     "giratina",
+    "gengar",
+    "umbreon",
+    "rayquaza",
     "gold star",
     "tag team",
     "alt art",
+    "moonbreon",
+)
+
+CHASE_CARD_TERMS = (
+    "gold star",
+    "crystal",
+    "shining",
+    "alt art",
+    "alternate art",
+    "special illustration",
     "moonbreon",
 )
 
@@ -136,6 +151,8 @@ def value_range(comps: list[Comp]) -> tuple[int, int] | tuple[None, None]:
 def text_blob(listing: dict[str, Any]) -> str:
     fields = (
         "card_name",
+        "card_title",
+        "card_number",
         "set",
         "listing_notes",
         "front_image_notes",
@@ -144,6 +161,21 @@ def text_blob(listing: dict[str, Any]) -> str:
         "buyer_intent",
     )
     return " ".join(str(listing.get(field, "")) for field in fields).lower()
+
+
+def psa_population(listing: dict[str, Any]) -> tuple[int | None, int | None, str]:
+    grade_pop = parse_float(
+        listing.get("psa_population_grade")
+        or listing.get("psa_grade_population")
+        or listing.get("psa_10_population")
+    )
+    total_pop = parse_float(listing.get("psa_population_total") or listing.get("psa_total_population"))
+    source = str(listing.get("psa_population_source", "")).strip()
+    return (
+        int(grade_pop) if grade_pop is not None else None,
+        int(total_pop) if total_pop is not None else None,
+        source,
+    )
 
 
 def missing_info(listing: dict[str, Any], comps: list[Comp]) -> list[str]:
@@ -157,9 +189,104 @@ def missing_info(listing: dict[str, Any], comps: list[Comp]) -> list[str]:
             missing.append(label)
     if not comps:
         missing.append("relevant sold comps")
-    if "pop" not in text_blob(listing):
+    grade_pop, total_pop, pop_source = psa_population(listing)
+    if grade_pop is None and total_pop is None:
         missing.append("PSA population data")
+    elif not pop_source:
+        missing.append("PSA population source")
     return missing
+
+
+def investability(
+    listing: dict[str, Any],
+    same_grade: list[Comp],
+    low: int | None,
+    high: int | None,
+    asking: float,
+    liquidity: int,
+) -> dict[str, Any]:
+    blob = text_blob(listing)
+    grade_pop, total_pop, pop_source = psa_population(listing)
+    demand = 35
+    scarcity = 35
+    risks: list[str] = []
+    thesis: list[str] = []
+
+    if any(term in blob for term in MAJOR_CARD_TERMS):
+        demand += 25
+        thesis.append("popular Pokemon or established chase character")
+    if any(term in blob for term in CHASE_CARD_TERMS):
+        demand += 15
+        thesis.append("recognized chase-card category")
+    if len(same_grade) >= 5:
+        demand += 10
+        thesis.append("recent same-grade sales support liquidity")
+    elif len(same_grade) <= 1:
+        demand -= 5
+        risks.append("thin recent same-grade sales history")
+
+    year = parse_float(listing.get("year"))
+    if year and year <= 2010:
+        scarcity += 15
+        thesis.append("older card with naturally lower surviving supply")
+    if grade_pop is not None:
+        if grade_pop <= 100:
+            scarcity += 30
+            thesis.append(f"low sourced grade population ({grade_pop})")
+        elif grade_pop <= 500:
+            scarcity += 18
+            thesis.append(f"moderate sourced grade population ({grade_pop})")
+        elif grade_pop <= 2000:
+            scarcity += 8
+        else:
+            scarcity -= 12
+            risks.append(f"high sourced grade population ({grade_pop})")
+    else:
+        scarcity -= 8
+        risks.append("PSA grade population not sourced")
+
+    if total_pop is not None and grade_pop is not None and total_pop > 0:
+        grade_rate = grade_pop / total_pop
+        if grade_rate <= 0.2:
+            scarcity += 10
+            thesis.append("low top-grade share versus total PSA population")
+        elif grade_rate >= 0.55 and grade_pop > 1000:
+            scarcity -= 8
+            risks.append("large top-grade share reduces scarcity")
+
+    premium = 0.0
+    if low is not None and high is not None and asking:
+        midpoint = (low + high) / 2
+        premium = (asking - midpoint) / midpoint if midpoint else 0.0
+        if premium > 0.25:
+            risks.append("entry price is far above same-grade comp midpoint")
+        elif premium > 0.1:
+            risks.append("entry price is above same-grade comp midpoint")
+        elif premium < -0.05:
+            thesis.append("entry price is below same-grade comp midpoint")
+
+    demand = max(0, min(100, demand))
+    scarcity = max(0, min(100, scarcity))
+    score_value = round(demand * 0.4 + scarcity * 0.35 + liquidity * 0.25)
+    if premium > 0.25 and scarcity < 70:
+        score_value -= 12
+    score_value = max(0, min(100, score_value))
+    hold_quality = "high" if score_value >= 75 else "medium" if score_value >= 50 else "low"
+
+    if not thesis:
+        thesis.append("investment case is not strongly supported by sourced demand or scarcity signals")
+
+    return {
+        "investability_score": score_value,
+        "demand_score": demand,
+        "scarcity_score": scarcity,
+        "hold_quality": hold_quality,
+        "psa_population_grade": grade_pop,
+        "psa_population_total": total_pop,
+        "psa_population_source": pop_source,
+        "investment_thesis": thesis,
+        "investment_risks": sorted(set(risks)),
+    }
 
 
 def score(listing: dict[str, Any], comps: list[Comp]) -> dict[str, Any]:
@@ -184,6 +311,7 @@ def score(listing: dict[str, Any], comps: list[Comp]) -> dict[str, Any]:
     elif grade is not None and grade <= 4 and "vintage" not in blob and "gold star" not in blob:
         liquidity -= 5
     liquidity = max(0, min(100, liquidity))
+    investment = investability(listing, same_grade, low, high, asking, liquidity)
 
     regret = 35
     red_flags: list[str] = []
@@ -278,6 +406,7 @@ def score(listing: dict[str, Any], comps: list[Comp]) -> dict[str, Any]:
         "suggested_offer": suggested,
         "expected_downside": downside,
         "liquidity_score": liquidity,
+        **investment,
         "regret_risk_score": regret,
         "confidence": confidence / 100,
         "condition_notes": [

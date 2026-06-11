@@ -5,11 +5,17 @@
 ```json
 {
   "card_name": "Charizard Gold Star",
+  "card_title": "Charizard Gold Star",
+  "card_number": "100/101",
+  "card_number_full": "100/101",
   "set": "EX Dragon Frontiers",
   "year": 2006,
   "language": "English",
   "grading_company": "PSA",
   "grade": 3,
+  "psa_population_grade": 75,
+  "psa_population_total": 600,
+  "psa_population_source": "PSA Pop Report",
   "cert_number": "12345678",
   "asking_price": 1200,
   "listing_url": "https://...",
@@ -25,6 +31,16 @@
 ```
 
 Required fields for deterministic scoring: `card_name`, `grade`, and `asking_price`.
+
+`card_name` should be the canonical identity used for comp search when available:
+
+```text
+Charizard VMAX #SV107 Shining Fates PSA 10
+```
+
+Keep parsed identity components in `card_title`, `card_number`, `card_number_full`, `set`, `year`, `language`, `grading_company`, and `grade` when available. `card_number` is the comp-search number; for printed numbers like `GG69/GG70`, keep `card_number` as `GG69` and `card_number_full` as `GG69/GG70`.
+
+Use `psa_population_grade`, `psa_population_total`, and `psa_population_source` only when population data is sourced from PSA, eBay grader data, or another cited source. Do not infer or estimate population values.
 
 ## URL Import
 
@@ -134,6 +150,15 @@ Recommendations should include comp provenance:
   "suggested_offer": 0,
   "expected_downside": "low | medium | high",
   "liquidity_score": 0,
+  "investability_score": 0,
+  "demand_score": 0,
+  "scarcity_score": 0,
+  "hold_quality": "low | medium | high",
+  "psa_population_grade": 0,
+  "psa_population_total": 0,
+  "psa_population_source": "",
+  "investment_thesis": [],
+  "investment_risks": [],
   "regret_risk_score": 0,
   "confidence": 0,
   "condition_notes": [],

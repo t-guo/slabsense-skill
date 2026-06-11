@@ -7,6 +7,8 @@
 
 const fs = require("node:fs");
 const http = require("node:http");
+const path = require("node:path");
+const { spawnSync } = require("node:child_process");
 const { Buffer } = require("node:buffer");
 
 const DEFAULT_DEBUGGER = "http://127.0.0.1:9222";
@@ -181,10 +183,17 @@ function toListing(url, extracted) {
     };
   }
 
+  const canonical = canonicalize(extracted.title || extracted.cleanTitle || "", extracted.gradingCompany || "", extracted.grade);
   return {
-    card_name: extracted.cleanTitle || "",
-    grading_company: extracted.gradingCompany || "",
-    grade: extracted.grade,
+    card_name: canonical.canonical_card_name || extracted.cleanTitle || "",
+    card_title: canonical.card_title || "",
+    card_number: canonical.card_number || "",
+    card_number_full: canonical.card_number_full || "",
+    set: canonical.set || "",
+    year: canonical.year || null,
+    language: canonical.language || "",
+    grading_company: canonical.grading_company || extracted.gradingCompany || "",
+    grade: canonical.grade ?? extracted.grade,
     asking_price: extracted.price,
     listing_url: url,
     listing_notes: `Browser title: ${extracted.title || "not exposed"}. ${
@@ -198,6 +207,26 @@ function toListing(url, extracted) {
     extraction_warnings: warnings,
     image_urls: extracted.imageUrls,
   };
+}
+
+function canonicalize(title, gradingCompany, grade) {
+  const script = path.join(__dirname, "canonicalize.py");
+  const args = [script, title || ""];
+  if (gradingCompany) {
+    args.push("--grading-company", gradingCompany);
+  }
+  if (grade !== null && grade !== undefined) {
+    args.push("--grade", String(grade));
+  }
+  const result = spawnSync("python3", args, { encoding: "utf8" });
+  if (result.status !== 0) {
+    return {};
+  }
+  try {
+    return JSON.parse(result.stdout);
+  } catch {
+    return {};
+  }
 }
 
 async function main() {

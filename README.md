@@ -1,6 +1,6 @@
 # SlabSense
 
-SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card listings. It is designed for Codex, Claude, and other local agents that can read a skill folder and run bundled scripts. It turns a listing URL or structured card facts into a collector-facing Buy / Watch / Pass recommendation with comps, fair value, offer guidance, downside, liquidity, regret risk, confidence, red flags, and missing information.
+SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card listings. It is designed for Codex, Claude, and other local agents that can read a skill folder and run bundled scripts. It turns a listing URL or structured card facts into a collector-facing Buy / Watch / Pass recommendation with comps, fair value, offer guidance, downside, liquidity, investability, regret risk, confidence, red flags, and missing information.
 
 It does not require API keys. The agent provides the reasoning layer; the bundled scripts handle listing capture, deterministic scoring, prompt export, temp cleanup, and smoke evals.
 
@@ -43,9 +43,11 @@ SlabSense should:
 
 1. load the skill instructions,
 2. capture marketplace URLs with Chrome-backed browsing,
-3. source exact same-card same-grade sold comps,
-4. separate sold comps from active asks and nearby-grade context,
-5. return a concise Buy / Watch / Pass recommendation.
+3. normalize the listing title into canonical card identity fields,
+4. source exact same-card same-grade sold comps,
+5. source PSA population data when available and cite the source,
+6. separate sold comps from active asks and nearby-grade context,
+7. return a concise Buy / Watch / Pass recommendation.
 
 SlabSense must not invent PSA population data, cert facts, sold prices, seller terms, or condition flaws. Missing facts should be labeled as missing information and reduce confidence.
 

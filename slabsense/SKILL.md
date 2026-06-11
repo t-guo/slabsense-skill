@@ -10,15 +10,18 @@ SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card purch
 ## Workflow
 
 1. Gather only grounded inputs:
-   - card name, set/year, language, PSA grade, cert number or cert URL if available
+   - canonical card identity, card name, card number, set/year, language, PSA grade, cert number or cert URL if available
    - asking price, listing URL or listing notes
    - front/back image observations or image paths
    - comparable sales from CSV, JSON, or user-provided text
+   - PSA population data and source when available from PSA, eBay grader data, or another cited source
    - buyer intent: personal collection, investment, trade candidate, or unknown
 2. Separate facts from inferences.
    - Never invent PSA population data, cert facts, sold prices, seller terms, or condition flaws.
    - Mark unavailable facts as missing information.
    - Use cautious condition language when photos are weak.
+   - Use canonical identity fields produced by `canonicalize.py` for comp search, but treat them as title-derived inferences unless independently verified.
+   - Use PSA population fields only when sourced. Never estimate pop values from vibes, rarity labels, or active listing claims without attribution.
 3. Run comp sourcing as a regular part of deal analysis.
    - Use [references/comp-sourcing.md](references/comp-sourcing.md) for exact-match sold comp sourcing, source confidence, and conflict handling.
    - Separate exact sold comps, nearby-grade comps, active asks, and marketplace in-page sales history.
@@ -49,7 +52,7 @@ SlabSense is a portable agent skill for evaluating PSA-graded Pokemon card purch
    - verdict: Buy, Watch, or Pass
    - fair value range
    - suggested offer
-   - downside, liquidity, regret risk, confidence
+   - downside, liquidity, investability, regret risk, confidence
    - comp sources checked and exact sold comps used
    - top risks, red flags, missing information
    - short rationale grounded in supplied evidence
@@ -78,6 +81,15 @@ When possible, include this JSON-compatible structure after the prose summary:
   "suggested_offer": 0,
   "expected_downside": "low | medium | high",
   "liquidity_score": 0,
+  "investability_score": 0,
+  "demand_score": 0,
+  "scarcity_score": 0,
+  "hold_quality": "low | medium | high",
+  "psa_population_grade": 0,
+  "psa_population_total": 0,
+  "psa_population_source": "",
+  "investment_thesis": [],
+  "investment_risks": [],
   "regret_risk_score": 0,
   "confidence": 0,
   "condition_notes": [],

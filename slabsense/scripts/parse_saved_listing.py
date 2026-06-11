@@ -15,6 +15,8 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
+from canonicalize import canonicalize_title
+
 
 class ListingMetadataParser(HTMLParser):
     def __init__(self) -> None:
@@ -182,6 +184,7 @@ def parse_listing(html: str, url: str) -> tuple[dict[str, Any], list[str]]:
     )
     price = extract_price(product, parser.meta)
     grading_company, grade = infer_grade(title)
+    canonical = canonicalize_title(title, grading_company, grade)
 
     image = first_string(product.get("image")) or parser.meta.get("og:image", "")
     notes = [f"Listing title: {title}" if title else "Listing title was not exposed."]
@@ -197,7 +200,13 @@ def parse_listing(html: str, url: str) -> tuple[dict[str, Any], list[str]]:
         warnings.append("grade was not found in the listing title")
 
     listing: dict[str, Any] = {
-        "card_name": normalize_card_name(title) if title else "",
+        "card_name": (canonical.get("canonical_card_name") or normalize_card_name(title)) if title else "",
+        "card_title": canonical.get("card_title", ""),
+        "card_number": canonical.get("card_number", ""),
+        "card_number_full": canonical.get("card_number_full", ""),
+        "set": canonical.get("set", ""),
+        "year": canonical.get("year"),
+        "language": canonical.get("language", ""),
         "grading_company": grading_company,
         "grade": grade,
         "asking_price": price,
